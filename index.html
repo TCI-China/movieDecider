@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>年度电影票选 - 2025</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); color: #f0f0f0; min-height: 100vh; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; background: rgba(30, 40, 50, 0.85); backdrop-filter: blur(10px); border-radius: 20px; padding: 30px; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.1); }
+        header { text-align: center; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 2px solid #00b4d8; }
+        h1 { color: #00b4d8; font-size: 2.8em; margin-bottom: 10px; text-shadow: 0 2px 5px rgba(0, 180, 216, 0.3); }
+        .deadline { color: #ffb347; font-size: 1.2em; margin-top: 10px; }
+        .subtitle { color: #90e0ef; font-size: 1.1em; margin-top: 5px; }
+        .timer { background: rgba(255, 179, 71, 0.15); padding: 15px; border-radius: 10px; margin-top: 20px; font-size: 1.3em; font-weight: bold; }
+        main { display: grid; grid-template-columns: 1fr; gap: 30px; }
+        @media (min-width: 768px) { main { grid-template-columns: 1fr 1fr; } }
+        section { background: rgba(40, 55, 70, 0.7); padding: 25px; border-radius: 15px; border: 1px solid rgba(100, 150, 200, 0.2); }
+        h2 { color: #4cc9f0; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px dashed #4cc9f0; display: flex; align-items: center; gap: 10px; }
+        h2 i { font-size: 1.2em; }
+        .movie-item { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 20px; margin-bottom: 20px; transition: transform 0.3s, border-color 0.3s; }
+        .movie-item:hover { transform: translateY(-3px); border-color: #4cc9f0; }
+        .movie-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+        .movie-title { font-size: 1.4em; font-weight: bold; color: #ffffff; }
+        .user-added { background: #4361ee; color: white; padding: 2px 10px; border-radius: 20px; font-size: 0.8em; margin-left: 10px; }
+        .vote-btn { background: linear-gradient(to right, #4361ee, #3a0ca3); color: white; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer; font-weight: bold; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; }
+        .vote-btn:hover { background: linear-gradient(to right, #3a56d4, #2d0685); box-shadow: 0 0 15px rgba(67, 97, 238, 0.6); }
+        .vote-btn.voted { background: linear-gradient(to right, #f72585, #b5179e); }
+        .vote-btn:disabled { background: #6c757d; cursor: not-allowed; }
+        .vote-count { background: rgba(76, 201, 240, 0.2); padding: 5px 12px; border-radius: 15px; font-weight: bold; margin-left: 10px; }
+        .sources, .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
+        .source-tag, .genre-tag { background: rgba(100, 150, 200, 0.25); padding: 5px 12px; border-radius: 20px; font-size: 0.85em; display: inline-flex; align-items: center; gap: 5px; }
+        .source-tag.netflix, .source-tag.appletv { border: 1px solid #ffb347; position: relative; }
+        .access-tip { position: absolute; top: -25px; left: 0; background: #ffb347; color: #000; padding: 3px 8px; border-radius: 5px; font-size: 0.7em; white-space: nowrap; display: none; }
+        .source-tag.netflix:hover .access-tip, .source-tag.appletv:hover .access-tip { display: block; }
+        .delete-btn { background: #f72585; color: white; border: none; padding: 5px 12px; border-radius: 15px; cursor: pointer; font-size: 0.8em; margin-left: 10px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #90e0ef; font-weight: bold; }
+        input[type="text"], textarea, select { width: 100%; padding: 12px 15px; background: rgba(255, 255, 255, 0.08); border: 1px solid #495057; border-radius: 10px; color: white; font-size: 1em; }
+        input[type="text"]:focus, textarea:focus, select:focus { outline: none; border-color: #00b4d8; box-shadow: 0 0 0 2px rgba(0, 180, 216, 0.2); }
+        .checkbox-group { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px; }
+        .checkbox-item { display: flex; align-items: center; }
+        .checkbox-item input { margin-right: 8px; }
+        .action-btns { display: flex; gap: 15px; margin-top: 25px; }
+        .primary-btn { background: linear-gradient(to right, #00b4d8, #0077b6); color: white; border: none; padding: 14px 28px; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 1.1em; flex: 1; transition: all 0.3s; }
+        .primary-btn:hover { background: linear-gradient(to right, #0096c7, #005f8a); box-shadow: 0 5px 15px rgba(0, 180, 216, 0.4); }
+        .secondary-btn { background: transparent; color: #00b4d8; border: 2px solid #00b4d8; padding: 14px 28px; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 1.1em; flex: 1; transition: all 0.3s; }
+        .secondary-btn:hover { background: rgba(0, 180, 216, 0.1); }
+        .admin-panel { background: rgba(220, 20, 60, 0.1); border: 1px solid crimson; padding: 20px; border-radius: 10px; margin-top: 30px; }
+        .error { color: #ff6b6b; background: rgba(255, 107, 107, 0.1); padding: 10px; border-radius: 5px; margin-top: 10px; border-left: 4px solid #ff6b6b; display: none; }
+        .success { color: #51cf66; background: rgba(81, 207, 102, 0.1); padding: 10px; border-radius: 5px; margin-top: 10px; border-left: 4px solid #51cf66; display: none; }
+        footer { text-align: center; margin-top: 40px; color: #adb5bd; font-size: 0.9em; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.1); }
+        #resultsTable { width: 100%; border-collapse: collapse; margin-top: 20px; display: none; }
+        #resultsTable th, #resultsTable td { padding: 12px 15px; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        #resultsTable th { background: rgba(0, 180, 216, 0.3); color: #4cc9f0; }
+        .progress-bar { height: 10px; background: rgba(255, 255, 255, 0.1); border-radius: 5px; margin-top: 5px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(to right, #4cc9f0, #4361ee); border-radius: 5px; width: 0%; transition: width 1s ease-in-out; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-film"></i> 年度电影票选 2025</h1>
+            <p class="subtitle">为你喜爱的电影投票，或推荐新的佳片！每人限投一票，可随时更改。</p>
+            <p class="deadline">投票截止：北京时间 <strong>2025年12月31日 00:00:00</strong></p>
+            <div class="timer" id="countdown">正在计算剩余时间...</div>
+        </header>
+
+        <main>
+            <section id="voteSection">
+                <h2><i class="fas fa-vote-yea"></i> 参与投票</h2>
+                <p>请从下方选择<b>一部</b>你最想观看的电影投票。点击按钮可以随时更改或撤回你的选择。</p>
+                <div id="movieList">
+                    <!-- 电影列表会由JavaScript动态生成 -->
+                    <p>正在加载电影列表...</p>
+                </div>
+            </section>
+
+            <section id="addMovieSection">
+                <h2><i class="fas fa-plus-circle"></i> 添加新电影</h2>
+                <p>列表里没有你心仪的电影？在此推荐，并注明可观看的平台和标签。</p>
+                <div class="error" id="addMovieError"></div>
+                <div class="success" id="addMovieSuccess"></div>
+                <div class="form-group">
+                    <label for="newMovieTitle"><i class="fas fa-heading"></i> 电影片名 *</label>
+                    <input type="text" id="newMovieTitle" placeholder="请输入电影名称" required>
+                    <small style="color:#adb5bd;">注意：片名将经过敏感词过滤，违规内容将被屏蔽。</small>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-satellite-dish"></i> 播放来源（可多选）*</label>
+                    <div class="checkbox-group" id="sourceCheckboxes">
+                        <!-- 播放来源选项由JS动态生成 -->
+                    </div>
+                    <input type="text" id="customSource" placeholder="或输入其他自定义来源" style="margin-top:10px;">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-tags"></i> 电影标签（可多选）</label>
+                    <div class="checkbox-group" id="tagCheckboxes">
+                        <!-- 标签选项由JS动态生成 -->
+                    </div>
+                    <input type="text" id="customTag" placeholder="或输入自定义标签，用逗号分隔" style="margin-top:10px;">
+                </div>
+                <div class="action-btns">
+                    <button class="primary-btn" id="submitMovieBtn"><i class="fas fa-paper-plane"></i> 提交新电影</button>
+                    <button class="secondary-btn" id="clearFormBtn"><i class="fas fa-broom"></i> 清空表单</button>
+                </div>
+            </section>
+        </main>
+
+        <!-- 结果查看和管理员面板 -->
+        <section id="resultsSection" style="margin-top:30px;">
+            <h2><i class="fas fa-chart-bar"></i> 投票结果</h2>
+            <p>投票结束后将公布详细结果。管理员可提前查看。</p>
+            <button class="secondary-btn" id="viewResultsBtn"><i class="fas fa-eye"></i> 查看实时结果（管理员）</button>
+            <table id="resultsTable">
+                <thead>
+                    <tr><th>排名</th><th>电影名称</th><th>得票数</th><th>得票率</th><th>趋势</th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
+
+        <section class="admin-panel" id="adminSection">
+            <h2><i class="fas fa-user-shield"></i> 管理员操作</h2>
+            <div class="form-group">
+                <label for="adminPassword"><i class="fas fa-key"></i> 管理密码</label>
+                <input type="password" id="adminPassword" placeholder="输入密码以解锁管理功能">
+            </div>
+            <div class="action-btns">
+                <button class="primary-btn" id="adminLoginBtn"><i class="fas fa-sign-in-alt"></i> 验证身份</button>
+                <button class="secondary-btn" id="removeMovieBtn" disabled><i class="fas fa-trash-alt"></i> 删除违规电影</button>
+            </div>
+            <div id="adminMovieList" style="margin-top:20px;"></div>
+        </section>
+
+        <footer>
+            <p>© 2025 电影爱好者社区 | 本投票系统采用设备识别技术，确保一人一票。</p>
+            <p>数据将安全存储于服务器，投票截止后永久保留结果。</p>
+        </footer>
+    </div>
+
+    <script>
+        // ==================== 全局配置与变量 ====================
+        const API_BASE_URL = 'YOUR_BACKEND_API_URL_HERE'; // 例如：https://your-vercel-app.vercel.app/api
+        const VOTE_DEADLINE = new Date('2025-12-31T00:00:00+08:00'); // 北京时间截止
+        let currentVote = null; // 当前设备投给哪部电影（ID）
+        let isAdmin = false;
+
+        // 预定义的选项
+        const predefinedSources = [
+            { id: 'bilibili', name: 'Bilibili' },
+            { id: 'tencent', name: '腾讯视频' },
+            { id: 'iqiyi', name: '爱奇艺' },
+            { id: 'mango', name: '芒果TV' },
+            { id: '1905', name: '1905电影网' },
+            { id: 'netflix', name: 'Netflix', tip: '中国大陆用户需使用特殊网络或代理访问[citation:5]' },
+            { id: 'appletv', name: 'Apple TV', tip: '中国大陆用户需使用特殊网络或代理访问[citation:5]' }
+        ];
+        const predefinedTags = ['喜剧', '动画', '动作', '科幻', '悬疑', '爱情', '恐怖', '纪录片', '家庭'];
+
+        // ==================== 页面初始化 ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            initCountdown();
+            renderSourceCheckboxes();
+            renderTagCheckboxes();
+            loadMovies();
+
+            // 事件监听
+            document.getElementById('submitMovieBtn').addEventListener('click', submitNewMovie);
+            document.getElementById('clearFormBtn').addEventListener('click', clearAddMovieForm);
+            document.getElementById('viewResultsBtn').addEventListener('click', viewResults);
+            document.getElementById('adminLoginBtn').addEventListener('click', adminLogin);
+            document.getElementById('removeMovieBtn').addEventListener('click', showMovieListForDeletion);
+
+            // 从本地存储检查是否已投票
+            const savedVote = localStorage.getItem('filmVote2025');
+            if (savedVote) {
+                currentVote = savedVote;
+            }
+        });
+
+        // ==================== 核心功能函数 ====================
+
+        // 1. 倒计时
+        function initCountdown() {
+            function updateTimer() {
+                const now = new Date();
+                const diff = VOTE_DEADLINE - now;
+                if (diff <= 0) {
+                    document.getElementById('countdown').innerHTML = '<i class="fas fa-flag-checkered"></i> 投票已结束！';
+                    disableVoting();
+                    return;
+                }
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                document.getElementById('countdown').innerHTML = `<i class="fas fa-clock"></i> 剩余：${days}天 ${hours}时 ${minutes}分 ${seconds}秒`;
+            }
+            updateTimer();
+            setInterval(updateTimer, 1000);
+        }
+
+        // 2. 渲染播放来源复选框
+        function renderSourceCheckboxes() {
+            const container = document.getElementById('sourceCheckboxes');
+            container.innerHTML = '';
+            predefinedSources.forEach(source => {
+                const html = `
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="source_${source.id}" value="${source.name}">
+                        <label for="source_${source.id}" class="${source.tip ? 'source-tag ' + source.id : ''}">
+                            ${source.name}
+                            ${source.tip ? `<span class="access-tip">${source.tip}</span>` : ''}
+                        </label>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', html);
+            });
+        }
+
+        // 3. 渲染标签复选框
+        function renderTagCheckboxes() {
+            const container = document.getElementById('tagCheckboxes');
+            container.innerHTML = '';
+            predefinedTags.forEach(tag => {
+                const html = `
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="tag_${tag}" value="${tag}">
+                        <label for="tag_${tag}">${tag}</label>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', html);
+            });
+        }
+
+        // 4. 加载电影列表
+        async function loadMovies() {
+            try {
+                // 实际开发中，这里应调用后端API：GET /api/movies
+                // const response = await fetch(`${API_BASE_URL}/movies`);
+                // const movies = await response.json();
+                const mockMovies = [
+                    { id: '1', title: '罗小黑战记 II', votes: 0, sources: ['Bilibili', '腾讯视频', '芒果TV', '优酷', '爱奇艺', '全平台'], tags: ['动画', '动作', '国漫'], addedByUser: false },
+                    { id: '2', title: '斗罗大陆', votes: 0, sources: ['腾讯视频'], tags: ['动画', '冒险', '奇幻'], addedByUser: false },
+                    { id: '3', title: '名侦探柯南VS怪盗基德', votes: 0, sources: ['爱奇艺'], tags: ['恋爱', '校园', '推理', '悬疑'], addedByUser: false },
+                    { id: '4', title: '怪盗基德1412', votes: 0, sources: ['爱奇艺'], tags: ['恋爱', '校园', '推理', '悬疑'], addedByUser: false },
+                    { id: '5', title: '哈利波特 系列', votes: 0, sources: ['爱奇艺', '芒果TV'], tags: ['奇幻', '青春', '冒险'], addedByUser: false },
+                    { id: '6', title: '唐人街探案 系列', votes: 0, sources: ['爱奇艺', '腾讯视频', '乐视视频', '搜狐视频'], tags: ['动作', '喜剧'], addedByUser: false },
+                    { id: '4', title: '怪盗基德1412', votes: 0, sources: ['爱奇艺'], tags: ['恋爱', '校园', '推理', '悬疑'], addedByUser: false },
+                ];
+                renderMovieList(mockMovies);
+            } catch (error) {
+                console.error('加载电影失败:', error);
+                document.getElementById('movieList').innerHTML = '<p class="error">无法加载电影列表，请刷新页面重试。</p>';
+            }
+        }
+
+        // 5. 渲染电影列表和投票按钮
+        function renderMovieList(movies) {
+            const container = document.getElementById('movieList');
+            container.innerHTML = '';
+            movies.forEach(movie => {
+                const isVotedFor = currentVote === movie.id;
+                const sourceTags = movie.sources.map(s => {
+                    const sourceObj = predefinedSources.find(src => src.name === s);
+                    const tip = sourceObj && sourceObj.tip ? `<span class="access-tip">${sourceObj.tip}</span>` : '';
+                    return `<span class="source-tag ${sourceObj ? sourceObj.id : ''}">${s}${tip}</span>`;
+                }).join('');
+                const tagTags = movie.tags.map(t => `<span class="genre-tag">${t}</span>`).join('');
+                const html = `
+                    <div class="movie-item" data-movie-id="${movie.id}">
+                        <div class="movie-header">
+                            <div>
+                                <span class="movie-title">${movie.title}</span>
+                                ${movie.addedByUser ? '<span class="user-added"><i class="fas fa-user-plus"></i> 用户推荐</span>' : ''}
+                                <span class="vote-count"><i class="fas fa-fire"></i> ${movie.votes} 票</span>
+                            </div>
+                            <button class="vote-btn ${isVotedFor ? 'voted' : ''}" onclick="castVote('${movie.id}')" ${isVotedFor ? 'disabled' : ''}>
+                                ${isVotedFor ? '<i class="fas fa-check-circle"></i> 已投票' : '<i class="fas fa-vote-yea"></i> 投票'}
+                            </button>
+                        </div>
+                        <div><strong>播放源：</strong>${sourceTags || '未知'}</div>
+                        <div><strong>标签：</strong>${tagTags || '无'}</div>
+                        ${movie.addedByUser ? `<button class="delete-btn" onclick="deleteUserMovie('${movie.id}')"><i class="fas fa-trash"></i> 删除我添加的</button>` : ''}
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', html);
+            });
+        }
+
+        // 6. 投票功能
+        async function castVote(movieId) {
+            if (new Date() >= VOTE_DEADLINE) {
+                alert('投票已截止！');
+                return;
+            }
+            try {
+                // 实际开发中，这里应调用后端API：POST /api/vote
+                // 后端会通过设备指纹（如IP+UserAgent哈希）或要求简单登录来确保一人一票[citation:7]
+                // const response = await fetch(`${API_BASE_URL}/vote`, {
+                //     method: 'POST',
+                //     headers: { 'Content-Type': 'application/json' },
+                //     body: JSON.stringify({ movieId: movieId })
+                // });
+                // const result = await response.json();
+                console.log(`模拟投票给电影ID: ${movieId}`);
+
+                // 更新本地状态和UI
+                const oldVoteBtn = currentVote ? document.querySelector(`.vote-btn[onclick*="${currentVote}"]`) : null;
+                if (oldVoteBtn) {
+                    oldVoteBtn.classList.remove('voted');
+                    oldVoteBtn.innerHTML = '<i class="fas fa-vote-yea"></i> 投票';
+                    oldVoteBtn.disabled = false;
+                }
+                currentVote = movieId;
+                localStorage.setItem('filmVote2025', movieId);
+                const newVoteBtn = document.querySelector(`.vote-btn[onclick*="${movieId}"]`);
+                newVoteBtn.classList.add('voted');
+                newVoteBtn.innerHTML = '<i class="fas fa-check-circle"></i> 已投票';
+                newVoteBtn.disabled = true;
+
+                // 模拟票数+1
+                const voteCountSpan = newVoteBtn.closest('.movie-item').querySelector('.vote-count');
+                const currentVotes = parseInt(voteCountSpan.textContent);
+                voteCountSpan.innerHTML = `<i class="fas fa-fire"></i> ${currentVotes + 1} 票`;
+
+            } catch (error) {
+                console.error('投票失败:', error);
+                alert('投票提交失败，请检查网络后重试。');
+            }
+        }
+
+        // 7. 提交新电影
+        async function submitNewMovie() {
+            const titleInput = document.getElementById('newMovieTitle');
+            const title = titleInput.value.trim();
+            const customSource = document.getElementById('customSource').value.trim();
+            const customTags = document.getElementById('customTag').value.trim();
+
+            // 前端简单验证
+            if (!title) {
+                showError('addMovieError', '请输入电影片名。');
+                return;
+            }
+
+            // 1. 敏感词过滤（前端为初步检查，后端会进行更严格的过滤[citation:4][citation:10]）
+            const sensitiveWords = ['色情', '淫秽', '暴力', '仇恨']; // 示例敏感词，实际应使用更全的词库[citation:4]
+            const hasSensitiveWord = sensitiveWords.some(word => title.includes(word));
+            if (hasSensitiveWord) {
+                showError('addMovieError', '电影片名包含不允许的词汇，请修改。');
+                return;
+            }
+
+            // 收集选中的播放来源
+            const selectedSources = [];
+            document.querySelectorAll('#sourceCheckboxes input:checked').forEach(cb => {
+                selectedSources.push(cb.value);
+            });
+            if (customSource) selectedSources.push(customSource);
+            if (selectedSources.length === 0) {
+                showError('addMovieError', '请至少选择一个播放来源。');
+                return;
+            }
+
+            // 收集选中的标签
+            const selectedTags = [];
+            document.querySelectorAll('#tagCheckboxes input:checked').forEach(cb => {
+                selectedTags.push(cb.value);
+            });
+            if (customTags) {
+                customTags.split(',').forEach(tag => tag.trim() && selectedTags.push(tag.trim()));
+            }
+
+            // 模拟提交到后端
+            console.log('提交新电影:', { title, sources: selectedSources, tags: selectedTags });
+            // 实际开发中调用： POST /api/movies
+            // await fetch(`${API_BASE_URL}/movies`, { method: 'POST', ... });
+
+            // 成功反馈
+            showSuccess('addMovieSuccess', `电影“${title}”提交成功！等待其他用户投票。`);
+            clearAddMovieForm();
+            // 重新加载列表
+            loadMovies();
+        }
+
+        // 8. 删除用户自己添加的电影
+        async function deleteUserMovie(movieId) {
+            if (!confirm('确定要删除您添加的这部电影吗？此操作不可撤销。')) return;
+            // 实际开发中调用： DELETE /api/movies/{id}?userToken=...
+            console.log(`模拟删除电影ID: ${movieId}`);
+            alert('电影已删除。');
+            loadMovies();
+        }
+
+        // 9. 管理员功能
+        async function adminLogin() {
+            const password = document.getElementById('adminPassword').value;
+            // 实际开发中，密码应在后端验证，并返回一个令牌
+            if (password === 'classMgrPwd') { // 示例密码，实际应用中必须复杂且保密
+                isAdmin = true;
+                document.getElementById('removeMovieBtn').disabled = false;
+                alert('管理员身份验证成功！');
+            } else {
+                alert('密码错误！');
+            }
+        }
+
+        async function viewResults() {
+            if (!isAdmin && new Date() < VOTE_DEADLINE) {
+                alert('投票结束前，仅管理员可查看详细结果。');
+                return;
+            }
+            // 调用后端API获取结果数据并渲染表格
+            document.getElementById('resultsTable').style.display = 'table';
+            // 省略渲染表格的详细代码...
+        }
+
+        function showMovieListForDeletion() {
+            if (!isAdmin) return;
+            // 这里应加载所有电影，并为管理员提供删除按钮
+            alert('此功能需连接后端，列出所有电影供管理员审核删除。');
+        }
+
+        // ==================== 工具函数 ====================
+        function clearAddMovieForm() {
+            document.getElementById('newMovieTitle').value = '';
+            document.querySelectorAll('#sourceCheckboxes input').forEach(cb => cb.checked = false);
+            document.querySelectorAll('#tagCheckboxes input').forEach(cb => cb.checked = false);
+            document.getElementById('customSource').value = '';
+            document.getElementById('customTag').value = '';
+            hideMessage('addMovieError');
+            hideMessage('addMovieSuccess');
+        }
+        function disableVoting() {
+            document.querySelectorAll('.vote-btn').forEach(btn => btn.disabled = true);
+        }
+        function showError(elementId, msg) {
+            const el = document.getElementById(elementId);
+            el.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${msg}`;
+            el.style.display = 'block';
+        }
+        function showSuccess(elementId, msg) {
+            const el = document.getElementById(elementId);
+            el.innerHTML = `<i class="fas fa-check-circle"></i> ${msg}`;
+            el.style.display = 'block';
+        }
+        function hideMessage(elementId) {
+            document.getElementById(elementId).style.display = 'none';
+        }
+    </script>
+</body>
+</html>
